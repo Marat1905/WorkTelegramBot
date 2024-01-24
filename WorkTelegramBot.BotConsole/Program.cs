@@ -3,6 +3,9 @@ using Microsoft.Extensions.Hosting;
 using System.Text;
 using Telegram.Bot;
 using WorkTelegramBot.BotConsole.Controllers;
+using WorkTelegramBot.BotConsole.Services.Interfaces;
+using WorkTelegramBot.BotConsole.Services;
+using WorkTelegramBot.BotConsole.Configuration;
 
 namespace WorkTelegramBot.BotConsole
 {
@@ -26,6 +29,11 @@ namespace WorkTelegramBot.BotConsole
 
         static void ConfigureServices(IServiceCollection services)
         {
+            AppSettings appSettings = BuildAppSettings();
+            services.AddSingleton(BuildAppSettings());
+
+            services.AddSingleton<IStorage, MemoryStorage>();
+
             // Подключаем контроллеры сообщений и кнопок
             services.AddTransient<DefaultMessageController>();
             services.AddTransient<VoiceMessageController>();
@@ -34,9 +42,17 @@ namespace WorkTelegramBot.BotConsole
 
 
             // Регистрируем объект TelegramBotClient c токеном подключения
-            services.AddSingleton<ITelegramBotClient>(provider => new TelegramBotClient("6299377057:AAHaNlY93hdrdQVanTPgmMibgQt41UDidRA"));
+            services.AddSingleton<ITelegramBotClient>(provider => new TelegramBotClient(appSettings.BotToken));
             // Регистрируем постоянно активный сервис бота
             services.AddHostedService<Bot>();
+        }
+
+        static AppSettings BuildAppSettings()
+        {
+            return new AppSettings()
+            {
+                BotToken = "6299377057:AAHaNlY93hdrdQVanTPgmMibgQt41UDidRA"
+            };
         }
     }
 }
